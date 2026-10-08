@@ -2,7 +2,7 @@
   "origin": "8727100",
   "destination": "7015400",
   "outbound": "2026-10-23",
-  "outbound_hours": ["05:00", "12:00"],
+  "outbound_hours": ["08:30", "13:30"],
   "inbounds": [
     "2026-10-25"
   ],
