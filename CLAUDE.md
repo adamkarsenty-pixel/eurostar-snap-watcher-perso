@@ -4,7 +4,7 @@ Ce dépôt surveille les billets Eurostar Snap et notifie l'utilisateur par mail
 
 ## Architecture (3 fichiers)
 
-- `config.json` : **seul fichier que l'utilisateur doit modifier** (gares, dates, nb d'adultes).
+- `config.json` : **seul fichier que l'utilisateur doit modifier** (gares, dates, nb d'adultes, plages horaires facultatives `outbound_hours` / `inbound_hours` filtrant sur l'heure de départ exacte du train).
 - `watch.py` : Python stdlib uniquement, aucune dépendance. Télécharge `https://snap.eurostar.com/fr-fr/search?adult=N&origin=UIC&destination=UIC&outbound=YYYY-MM-DD[&inbound=YYYY-MM-DD]`, extrait le JSON de `<script id="__NEXT_DATA__">`, lit `props.pageProps.outboundTimeSlots` / `inboundTimeSlots`, et écrit dans `found.json` les créneaux dont `fare` n'est pas `null`. Les variables d'environnement `OUTBOUND` / `INBOUNDS` (liste séparée par des virgules) surchargent la config pour les tests.
 - `.github/workflows/watch.yml` : cron GitHub toutes les 15 min (en secours, voir plus bas) + `workflow_dispatch` avec les inputs `outbound` / `inbounds` (test). Lance `watch.py`, puis `actions/github-script` crée **une issue par créneau trouvé**, assignée au propriétaire du dépôt et le mentionnant (c'est ce qui déclenche le mail).
 

@@ -20,6 +20,9 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json"
 ORIGIN = CONFIG["origin"]
 DESTINATION = CONFIG["destination"]
 ADULTS = int(CONFIG.get("adults", 1))
+# Plages horaires de départ acceptées ["HH:MM", "HH:MM"], facultatives (absent = toute la journée).
+OUTBOUND_HOURS = CONFIG.get("outbound_hours")
+INBOUND_HOURS = CONFIG.get("inbound_hours")
 
 # Surchargeables via les variables d'environnement (lancement manuel de test).
 OUTBOUND = os.environ.get("OUTBOUND") or CONFIG["outbound"]
@@ -67,7 +70,15 @@ def city(props: dict, uic: str) -> str:
     return uic
 
 
-def available_slots(slots: list | None, direction: str, url: str) -> list[dict]:
+def in_hours(departure: str | None, hours: list | None) -> bool:
+    if not hours:
+        return True
+    if not departure:
+        return True  # heure inconnue : on signale quand même plutôt que de rater une offre
+    return hours[0] <= departure[:5] <= hours[1]
+
+
+def available_slots(slots: list | None, direction: str, url: str, hours: list | None = None) -> list[dict]:
     found = []
     for slot in slots or []:
         if slot.get("fare"):
@@ -75,6 +86,8 @@ def available_slots(slots: list | None, direction: str, url: str) -> list[dict]:
             # Snap n'affiche qu'un créneau, mais l'offre contient le train exact.
             legs = slot["fare"].get("legs") or [{}]
             first, last = legs[0].get("timing") or {}, legs[-1].get("timing") or {}
+            if not in_hours(first.get("departureTime"), hours):
+                continue
             prices = slot["fare"].get("prices") or {}
             found.append({
                 "direction": direction,
@@ -106,10 +119,10 @@ def main() -> int:
         here, there = city(props, ORIGIN), city(props, DESTINATION)
         # L'aller est identique dans chaque recherche : on ne le compte qu'une fois.
         if not outbound_done:
-            found += available_slots(props.get("outboundTimeSlots"), f"Aller {here} → {there}", url)
+            found += available_slots(props.get("outboundTimeSlots"), f"Aller {here} → {there}", url, OUTBOUND_HOURS)
             outbound_done = True
         if inbound:
-            found += available_slots(props.get("inboundTimeSlots"), f"Retour {there} → {here}", url)
+            found += available_slots(props.get("inboundTimeSlots"), f"Retour {there} → {here}", url, INBOUND_HOURS)
 
     for f in found:
         print(f"DISPO  {f['direction']}  {f['earliest'][:10]} train {f['train']} {f['departure']} → {f['arrival']}  {f['price']} €  ({f['seats']} places)")

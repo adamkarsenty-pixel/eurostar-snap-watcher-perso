@@ -33,7 +33,9 @@ Dans ton nouveau dépôt, ouvre [`config.json`](config.json), clique sur le cray
   "origin": "8727100",
   "destination": "7015400",
   "outbound": "2026-10-23",
+  "outbound_hours": ["05:00", "12:00"],
   "inbounds": ["2026-10-25", "2026-10-26"],
+  "inbound_hours": ["17:00", "23:59"],
   "adults": 1
 }
 ```
@@ -43,6 +45,7 @@ Dans ton nouveau dépôt, ouvre [`config.json`](config.json), clique sur le cray
 | `origin` / `destination` | Codes des gares (tableau ci-dessous) |
 | `outbound` | Date de l'aller, format `AAAA-MM-JJ` |
 | `inbounds` | Une ou plusieurs dates de retour possibles. `[]` = aller simple |
+| `outbound_hours` / `inbound_hours` | Facultatif. Plage d'heure de départ du train acceptée, `["HH:MM", "HH:MM"]` (bornes incluses). Absent = toute la journée |
 | `adults` | Nombre de voyageurs adultes |
 
 **Codes des gares :**
